@@ -1,36 +1,44 @@
 const fs = require("fs");
-let urlUsers = "./DB/users.json";
-let urlLogs = "./DB/logs.json";
-let urlExercises = "./DB/exercises.json";
+let urlDB = "./DB/DB.json";
 
 class DB {
-  constructor(users, logs, exercises) {
-    this.users = users;
-    this.logs = logs;
-    this.exercises = exercises;
-    this.backUpUsersList = JSON.stringify([
-      { username: "Dru", _id: "oGzinL13epdIauh7" },
-      { username: "Bill", _id: "nyIefOxDuzDTAKD0" },
-      { username: "Chloe", _id: "WK9I9qHctKBprJy6" },
+  constructor(url) {
+    this.DB_URL = url;
+    this.backUpList = JSON.stringify([
+      {
+        username: "fcc_test",
+        count: 1,
+        _id: "5fb5853f734231456ccb3b05",
+        log: [
+          {
+            description: "test",
+            duration: 60,
+            date: "Mon Jan 01 1990",
+          },
+        ],
+      },
     ]);
   }
-  getUsers(url = this.users) {
+  getUsers(url = this.DB_URL) {
     try {
-      let usersList = JSON.parse(fs.readFileSync(url, "utf-8"));
+      let usersList = this.getDB_Data().map((item) => ({
+        username: item.username,
+        _id: item._id,
+      }));
       return usersList;
     } catch (err) {
       console.log(`Failed get users on path ${url}: `, err);
     }
   }
-  getLogs(url = this.logs) {
+  getLogs(url = this.DB_URL) {
     let logsList = JSON.parse(fs.readFileSync(url, "utf-8"));
     return logsList;
   }
-  getExercises(url = this.exercises) {
+  getExercises(url = this.DB_URL) {
     let exercisesList = JSON.parse(fs.readFileSync(url, "utf-8"));
     return exercisesList;
   }
-  addUser(user, url = this.users) {
+  addUser(user, url = this.DB_URL) {
     try {
       const usersArray = this.getUsers();
       usersArray.push(user);
@@ -44,26 +52,34 @@ class DB {
 
   // ===============================
   // *Service:
-  restoreUsers(url = urlUsers) {
-    let backUp = this.backUpUsersList;
+  getDB_Data(url = this.DB_URL) {
+    try {
+      let DB_list = JSON.parse(fs.readFileSync(url, "utf-8"));
+      return DB_list;
+    } catch (err) {
+      console.log(`Failed get data on path ${url}: `, err);
+    }
+  }
+  restoreDB(url = this.DB_URL) {
+    let backUp = this.backUpList;
     fs.writeFileSync(url, backUp);
     console.log("Users List successfully restored");
     return;
   }
-  clearDbArea(url) {
+  clearDB(url = this.DB_URL) {
     fs.writeFileSync(url, "{}");
     console.log(`File with path ${url} cleared successfully`);
   }
 }
 
-const DB_Helper = new DB(urlUsers, urlLogs, urlExercises);
+const DB_Helper = new DB(urlDB);
 // ================================================================
 // DB_Helper.addUser({ username: "Mark", _id: 4 });
 // DB_Helper.addUser({ username: "Mary", _id: 5 });
 // ================================================================
-// DB_Helper.clearDbArea(urlUsers);
-// DB_Helper.restoreUsers();
-//console.log(DB_Helper.getUsers());
+// DB_Helper.clearDB();
+// DB_Helper.restoreDB();
+// console.log(DB_Helper.getUsers());
 
 // ============================
 module.exports = DB_Helper;
