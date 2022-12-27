@@ -21,7 +21,7 @@ class DB {
   }
   getUsers(url = this.DB_URL) {
     try {
-      let usersList = this.getDB_Data().map((item) => ({
+      let usersList = this.getDB_Data(url).map((item) => ({
         username: item.username,
         _id: item._id,
       }));
@@ -40,10 +40,10 @@ class DB {
   }
   addUser(user, url = this.DB_URL) {
     try {
-      const usersArray = this.getUsers();
-      usersArray.push(user);
-      let usersList = JSON.stringify(usersArray);
-      fs.writeFileSync(url, usersList);
+      const itemsArray = this.getDB_Data(url);
+      itemsArray.push(user);
+      let jsonItemsArray = JSON.stringify(itemsArray);
+      fs.writeFileSync(url, jsonItemsArray);
       return;
     } catch (err) {
       console.log(err);
@@ -60,6 +60,39 @@ class DB {
       console.log(`Failed get data on path ${url}: `, err);
     }
   }
+  getListByKey(key) {
+    const DB_list = this.getDB_Data();
+    let list = DB_list.map((item) => item[key]);
+    return list;
+  }
+  getListItemsByEntry(key, val) {
+    let DB_list = this.getDB_Data();
+    let itemsArray = DB_list.map((item) => {
+      if (item[key] === val) return item;
+    });
+    return itemsArray;
+  }
+  getItemById(itemId) {
+    let DB_list = this.getDB_Data();
+    let item = DB_list.find((el) => el._id === itemId);
+    if (!item) {
+      console.log(`No any item with id: ${itemId}`);
+      return null;
+    }
+    return item;
+  }
+  updateItem(item) {
+    let itemId = item._id;
+    let DB_list = this.getDB_Data();
+    let itemIndex = DB_list.findIndex((el) => el._id === itemId);
+    if (itemIndex === -1) {
+      console.log(`Item with id: ${itemId} doesn't exist`);
+      return null;
+    }
+    DB_list[itemIndex] = item;
+    fs.writeFileSync(this.DB_URL, JSON.stringify(DB_list));
+    return;
+  }
   restoreDB(url = this.DB_URL) {
     let backUp = this.backUpList;
     fs.writeFileSync(url, backUp);
@@ -67,7 +100,7 @@ class DB {
     return;
   }
   clearDB(url = this.DB_URL) {
-    fs.writeFileSync(url, "{}");
+    fs.writeFileSync(url, JSON.stringify([]));
     console.log(`File with path ${url} cleared successfully`);
   }
 }
