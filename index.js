@@ -85,7 +85,6 @@ app.get("/api/users/:_id/logs", (req, res) => {
   let to = new Date(query.to);
   let limit = query.limit;
   if (from.toString() !== "Invalid Date") {
-    console.log("In query");
     item.log = item.log.filter((el, i) => {
       let date = new Date(el.date);
       let res = date > from && date < to;
